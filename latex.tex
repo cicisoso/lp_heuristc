@@ -1,0 +1,1113 @@
+% This LaTeX document needs to be compiled with XeLaTeX.
+\documentclass[
+  10
+]{article}
+\usepackage[margin=2cm,includehead=true,includefoot=true,centering,]{geometry}
+\usepackage{xcolor}
+\usepackage{ucharclasses}
+\usepackage{hyperref}
+\usepackage{amsmath,amssymb}
+\usepackage{amsfonts}
+\usepackage[version=4]{mhchem}
+\usepackage{stmaryrd}
+\usepackage{bbold}
+\usepackage{polyglossia}
+\usepackage{fontspec}
+\usepackage{ctex}
+\usepackage[export]{adjustbox}
+\usepackage{tabularx}
+\usepackage{booktabs}
+
+\usepackage{setspace}
+\setstretch{1.2}
+
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+\hypersetup{colorlinks=true, linkcolor=blue, filecolor=magenta, urlcolor=cyan,}
+\urlstyle{same}
+
+\usepackage{colortbl}
+\definecolor{table-row-color}{HTML}{999999}
+\definecolor{table-rule-color}{HTML}{999999}
+%\arrayrulecolor{black!40}
+\arrayrulecolor{table-rule-color}     % color of \toprule, \midrule, \bottomrule
+\setlength{\aboverulesep}{0pt}
+\setlength{\belowrulesep}{0pt}
+
+
+\setotherlanguages{english}
+\IfFontExistsTF{Source Han Serif CN}
+{\newfontfamily\chinesefont{Source Han Serif CN}}
+{\IfFontExistsTF{Noto Serif CJK SC}
+  {\newfontfamily\chinesefont{Noto Serif CJK SC}}
+  {\IfFontExistsTF{SimSun}
+    {\newfontfamily\chinesefont{SimSun}}
+    {\IfFontExistsTF{FangSong}
+      {\newfontfamily\chinesefont{FangSong}}
+      {\newfontfamily\chinesefont{Arial Unicode MS}}
+}}}
+\IfFontExistsTF{Times New Roman}
+{\newfontfamily\englishfont{Times New Roman}}
+{\IfFontExistsTF{Liberation Serif}
+  {\newfontfamily\englishfont{Liberation Serif}}
+  {\IfFontExistsTF{DejaVu Serif}
+    {\newfontfamily\englishfont{DejaVu Serif}}
+    {\newfontfamily\englishfont{Arial}}
+}}
+
+
+\author{}
+\date{}
+
+\begin{document}
+
+
+\section{Heuristic Learning with Graph Neural Networks: A Unified
+Framework for Link
+Prediction}\label{heuristic-learning-with-graph-neural-networks-a-unified-framework-for-link-prediction}
+
+\section{ABSTRACT}\label{abstract}
+
+Link prediction is a fundamental task in graph learning, inherently
+shaped by the topology of the graph. While traditional heuristics are
+grounded in graph topology, they encounter challenges in generalizing
+across diverse graphs. Recent research efforts have aimed to leverage
+the potential of heuristics, yet a unified formulation accommodating
+both local and global heuristics remains undiscovered. Drawing insights
+from the fact that both local and global heuristics can be represented
+by adjacency matrix multiplications, we propose a unified matrix
+formulation to accommodate and generalize various heuristics. We further
+propose the Heuristic Learning Graph Neural Network (HL-GNN) to
+efficiently implement the formulation. HL-GNN adopts intra-layer
+propagation and inter-layer connections, allowing it to reach a depth of
+around 20 layers with lower time complexity than GCN. Extensive
+experiments on the Planetoid, Amazon, and OGB datasets underscore the
+effectiveness and efficiency of HL-GNN. It outperforms existing methods
+by a large margin in prediction performance. Additionally, HL-GNN is
+several orders of magnitude faster than heuristic-inspired methods while
+requiring only a few trainable parameters. The case study further
+demonstrates that the generalized heuristics and learned weights are
+highly interpretable. \(^{1}\)
+
+\section{CCS CONCEPTS}\label{ccs-concepts}
+
+\begin{itemize}
+\tightlist
+\item
+  Theory of computation \(\rightarrow\) Graph algorithms analysis;\\
+\item
+  Computing methodologies \(\rightarrow\) Neural networks.
+\end{itemize}
+
+\section{KEYWORDS}\label{keywords}
+
+Graph learning; Link prediction; Graph neural networks; Heuristic
+methods
+
+*Correspondence is to Q. Yao at qyaoaa@tsinghua.edu.cn.\\
+\textsuperscript{1}The full version of the paper, including the
+Appendix, is available at arXiv:2406.07979.\\
+2The code is available at https://github.com/LARS-research/HL-GNN.
+
+Permission to make digital or hard copies of all or part of this work
+for personal or classroom use is granted without fee provided that
+copies are not made or distributed for profit or commercial advantage
+and that copies bear this notice and the full citation on the first
+page. Copyrights for components of this work owned by others than the
+author(s) must be honored. Abstracting with credit is permitted. To copy
+otherwise, or republish, to post on servers or to redistribute to lists,
+requires prior specific permission and/or a fee. Request permissions
+from permissions@acm.org.
+
+KDD '24, August 25-29, 2024, Barcelona, Spain.
+
+© 2024 Copyright held by the owner/author(s). Publication rights
+licensed to ACM.
+
+ACM ISBN 979-8-4007-0490-1/24/08
+
+https://doi.org/10.1145/3637528.3671946
+
+Lanning Wei\\
+Department of Electronic Engineering, Tsinghua University\\
+Beijing, China
+
+Quanming Yao*\\
+Department of Electronic Engineering, Tsinghua University\\
+Beijing, China
+
+\section{ACM Reference Format:}\label{acm-reference-format}
+
+Juzheng Zhang, Lanning Wei, Zhen Xu, and Quanming Yao. 2024. Heuristic
+Learning with Graph Neural Networks: A Unified Framework for Link
+Prediction. In Proceedings of the 30th ACM SIGKDD Conference on
+Knowledge Discovery and Data Mining (KDD '24), August 25-29, 2024,
+Barcelona, Spain. ACM, New York, NY, USA, 9 pages.
+https://doi.org/10.1145/3637528.3671946
+
+\section{1 INTRODUCTION}\label{introduction}
+
+Link prediction stands as a cornerstone in the domain of graph machine
+learning, facilitating diverse applications from knowledge graph
+reasoning {[}34{]} to drug interaction prediction {[}27, 35{]} and
+recommender systems {[}11{]}. While its significance is unquestionable,
+research in this area has not reached the same depth as that for node or
+graph classification {[}13, 20, 28, 29{]}.
+
+In graph machine learning, two fundamental sources of information play a
+pivotal role: node features and graph topology {[}5, 10{]}. Link
+prediction task is inherently driven by graph topology {[}17, 32, 33{]}.
+Heuristics, which derive exclusively from graph topology, naturally
+align with link prediction. The appeal of heuristics lies in their
+simplicity and independence of learning. While heuristics are crafted
+from human intuition and insights, they can be broadly categorized into
+two types: local heuristics, which focus on neighboring nodes, and
+global heuristics, which focus on global paths {[}17{]}.
+
+Effective link prediction benefits from both local and global
+topological information {[}18{]}. For instance, in a triangular network,
+each pair of nodes shares two common neighbors, making local heuristics
+effective. Conversely, in a hexagonal network, where only length-5 paths
+connect each node pair, global heuristics may yield better results.
+Hence, the adaptive integration of multi-range topological information
+from both local and global heuristics is essential for accurate
+predictions.
+
+While heuristics prove effective in link prediction tasks, they
+inherently capture specific topology patterns, posing challenges in
+their generalization to diverse graphs {[}32, 38{]}. Moreover,
+heuristics are unable to leverage node features, limiting their efficacy
+on attributed graphs {[}33{]}. To make heuristics more universal and
+general, recent research efforts have been directed toward establishing
+formulations for heuristics and learning heuristics from these
+formulations. Notable examples include SEAL {[}33{]}, NBFNet {[}38{]},
+and Neo-GNN {[}32{]}. SEAL's \(\gamma\) -decaying framework and NBFNet's
+path formulation are tailored for global heuristics, while Neo-GNN's MLP
+framework is tailored for local ones. To obtain multi-range topological
+information, a unified formulation that accommodates
+
+both local and global heuristics is necessary, yet it remains
+undiscovered.
+
+Our motivation for constructing the unified formulation stems from the
+observation that both local and global heuristics can be expressed
+through adjacency matrix multiplications. Therefore, we unify local and
+global heuristics into a matrix formulation, enabling the accommodation
+and generalization of various local and global heuristics. In contrast
+to previous works that construct formulations based on abstract
+functions such as SEAL {[}33{]}, NBFNet {[}38{]}, and Neo-GNN {[}32{]},
+our unified formulation is developed through direct matrix operations.
+This unified formulation ensures rigorous equivalence to numerous local
+and global heuristics under specific configurations.
+
+To learn generalized heuristics and acquire multi-range information, we
+propose the Heuristic Learning Graph Neural Network (HL-GNN) to
+efficiently implement the formulation. HL-GNN incorporates intra-layer
+propagation and inter-layer connections while excluding transformation
+and activation functions. This enables HL-GNN to effectively reach a
+depth of around 20 layers, while only requiring the training of a global
+GNN with a time complexity even lower than GCN. The adaptive weights in
+HL-GNN facilitate the integration of multi-range topological
+information, and govern the trade-off between node features and
+topological information.
+
+Our comprehensive experiments, conducted on the Planetoid, Amazon, and
+OGB datasets, confirm the effectiveness and efficiency of our proposed
+HL-GNN. It consistently achieves state-of-the-art performance across
+numerous benchmarks, maintains excellent scalability, and stands out as
+the most parameter-efficient method among existing GNN methods.
+Furthermore, it demonstrates superior speed, surpassing existing
+heuristic-inspired methods by several orders of magnitude. HL-GNN is
+highly interpretable, as evidenced by the generalized heuristics and
+learned weights on real-world datasets as well as synthetic datasets.
+
+Our contributions can be summarized as follows:
+
+\begin{itemize}
+\tightlist
+\item
+  We unify local and global heuristics into a matrix formulation,
+  facilitating the accommodation and generalization of heuristics. We
+  demonstrate that numerous traditional heuristics align with our
+  formulation under specific configurations.\\
+\item
+  We propose HL-GNN to efficiently implement the formulation, capable of
+  reaching a depth of around 20 layers with lower time complexity than
+  GCN. HL-GNN can adaptively balance the trade-off between node features
+  and topological information.\\
+\item
+  Comprehensive experiments demonstrate that HL-GNN outperforms existing
+  methods in terms of performance and efficiency. The interpretability
+  of HL-GNN is highlighted through the analysis of generalized
+  heuristics and learned weights.
+\end{itemize}
+
+\section{2 RELATED WORKS}\label{related-works}
+
+\section{2.1 Graph Neural Networks}\label{graph-neural-networks}
+
+Graph Neural Networks (GNNs) have emerged as a powerful paradigm for
+learning node representations by exploiting neural networks to
+manipulate both node features and graph topology. These networks employ
+a message-passing mechanism, with notable examples including Graph
+Convolutional Network (GCN) {[}10{]}, GraphSAGE {[}7{]}, and Graph
+Attention Network (GAT) {[}26{]}. Through iterative message propagation,
+GNNs enable each node representation
+
+to accumulate information from its neighboring nodes, thereby
+facilitating downstream tasks.
+
+While GNNs have emerged as potent solutions for node and graph
+classification {[}13, 20, 28, 29{]}, they sometimes fall short in link
+prediction scenarios compared to traditional heuristics like Common
+Neighbors (CN) {[}2{]} or the Resource Allocation Index (RA) {[}36{]}.
+The primary issue lies in the inherent intertwining of node features and
+graph topology during the message-passing process in conventional GNNs.
+This entanglement causes node features to interfere with graph topology,
+impeding the effective extraction of topological information for link
+prediction tasks.
+
+Although in principle an arbitrary number of GNN layers can be stacked,
+practical GNNs are usually shallow, typically consisting of 2-3 layers,
+as conventional GNNs often experience a sharp performance drop after
+just 2 or 3 layers. A widely accepted explanation for this performance
+degradation with increasing depth is the over-smoothing issue {[}14,
+30{]}, which refers to node representations becoming non-discriminative
+when going deep. While the adaptive integration of both local and global
+topological information is essential for link prediction, conventional
+GNNs usually cannot penetrate beyond 3 layers, restricting the
+extraction of global topological information.
+
+\section{2.2 Link Prediction}\label{link-prediction}
+
+Link prediction predicts the likelihood of a link forming between two
+nodes in a graph. The problem of link prediction has traditionally been
+addressed by heuristic methods. These methods are primarily concerned
+with quantifying the similarity between two nodes based on the graph
+topology. Heuristic methods can be broadly categorized into two groups:
+local and global {[}17, 18{]}.
+
+Local heuristics can be further divided into entirety-based heuristics
+and individual-based heuristics. Entirety-based heuristics, like Common
+Neighbors (CN) {[}2{]} and the Local Leicht-Holme-Newman Index (LLHN)
+{[}12{]}, consider the cumulative count of common neighbors. In
+contrast, individual-based heuristics, exemplified by the Resource
+Allocation Index (RA) {[}36{]}, focus on nodes within the common
+neighborhood and incorporate detailed topological information such as
+the degree of each node.
+
+Global heuristics, on the other hand, leverage the entire graph
+topology. Methods such as the Katz Index (KI) {[}9{]} and the Global
+Leicht-Holme-Newman Index (GLHN) {[}12{]} consider all possible paths
+between node pairs. The Random Walk with Restart (RWR) {[}3{]} assesses
+the similarity between two nodes based on random walk probabilities.
+Some global heuristics are tailored to specific path lengths, like the
+Local Path Index (LPI) {[}16{]} and the Local Random Walks (LRW)
+{[}15{]}.
+
+Traditional heuristic methods are manually designed and show limitations
+on complex real-world graphs, prompting a shift toward learning-based
+approaches. Embedding methods, including Matrix Factorization {[}11{]},
+DeepWalk {[}19{]}, LINE {[}24{]}, and Node2vec {[}6{]}, factorize
+network representations into low-dimensional node embeddings. However,
+embedding methods face limitations due to their inability to leverage
+node features on attributed graphs.
+
+Recent advancements have focused on enhancing GNNs with valuable
+topological information. Subgraph GNNs like SEAL {[}33{]}, GraIL
+{[}25{]}, and SUREL {[}31{]} explicitly encode subgraphs around
+
+node pairs. However, they require the running of a subgraph GNN with the
+labeling trick for each link during training and inference. Taking a
+different perspective, models like NBFNet {[}38{]} and REDGNN {[}34{]}
+adopt source-specific message passing, drawing inspiration from global
+heuristics. However, they require training a global GNN for each source
+node. Some methods opt for a single global GNN to improve scalability
+and efficiency. Neo-GNN {[}32{]} uses two MLPs, while SEG {[}1{]} uses a
+GCN layer and an MLP to approximate a heuristic function. BUDDY {[}4{]}
+develops a novel GNN that passes subgraph sketches as messages. However,
+these methods primarily focus on local topological information and
+struggle to capture global topological information. In contrast, the
+proposed HL-GNN can capture long-range information up to 20 hops while
+only requiring the training of a global GNN. Further details about the
+comparison of HL-GNN with existing methods are provided in Section 4.2.
+
+\section{3 UNIFIED HEURISTIC
+FORMULATION}\label{unified-heuristic-formulation}
+
+Let \(\mathcal{G} = (\mathcal{V},\mathcal{E})\) denote a graph, with
+nodes \(\mathcal{V}\) and edges \(\mathcal{E}\) . In this work, we
+consider undirected and unweighted graphs. We define
+\(|\mathcal{V}| = N\) as the number of nodes and \(|\mathcal{E}| = M\)
+as the number of edges. Node features are characterized by the node
+feature matrix \(X\in \mathbb{R}^{N\times F}\) , where \(F\) indicates
+the number of features. The graph topology is encapsulated by the
+adjacency matrix \(A\in \{0,1\}^{N\times N}\) . The matrix
+\(\tilde{\boldsymbol{A}} = \boldsymbol {A} + \boldsymbol{I}_N\)
+represents the adjacency matrix with self-loops, where
+\(\tilde{a}_{ij} = 1\) signifies an edge between nodes \(i\) and \(j\) .
+The node degree \(i\) with self-loops is given by
+\(\tilde{d}_i = \sum_j\tilde{a}_{ij}\) , with the diagonal degree matrix
+with self-loops denoted as
+\(\tilde{D} = \mathrm{diag}(\tilde{d}_1,\dots ,\tilde{d}_N)\) . The set
+\(\Gamma_{x}\) represents the 1-hop neighbors of node \(x\) ,
+encompassing node \(x\) itself.
+
+We introduce a set of normalized adjacency matrices, detailed in Table
+1. This set comprises the symmetrically normalized matrix
+\(\tilde{A}_{\mathrm{sym}}\) , the row-stochastic normalized matrix
+\(\tilde{A}_{\mathrm{rs}}\) , and the column-stochastic normalized
+matrix \(\tilde{A}_{\mathrm{cs}}\) , which encompass diverse
+normalization techniques (left multiplication, right multiplication, or
+both) applied to the adjacency matrix. Next, we define the propagation
+operator \(\mathbb{A}\) to offer a choice among different types of
+adjacency matrices:
+
+Definition 3.1. (Propagation operator). The propagation operator
+\(\mathbb{A} \in \mathbb{R}^{N \times N}\) is defined as
+\(\mathbb{A} \in \{\tilde{A}, \tilde{A}_{\mathrm{sym}}, \tilde{A}_{\mathrm{rs}}, \tilde{A}_{\mathrm{cs}}\}\)
+. The expressions for the adjacency matrices
+\(\tilde{A}, \tilde{A}_{\mathrm{sym}}, \tilde{A}_{\mathrm{rs}}, \tilde{A}_{\mathrm{cs}}\)
+are detailed in Table 1.
+
+The propagation operator encapsulates the prevalent propagation
+mechanisms commonly employed in GNNs. By substituting the adjacency
+matrix \(\tilde{\mathbf{A}}\) with the propagation operator
+\(\mathbb{A}\) , we can opt for various propagation mechanisms that
+deliver diverse information.
+
+Given that heuristics are fundamentally influenced by graph topology, it
+is possible to express various heuristics using adjacency matrices. The
+\((i,j)\) entry of the 2-order adjacency matrix multiplication denotes
+the count of common neighbors for nodes \(i\) and \(j\) . The \((i,j)\)
+entry of the \(l\) -order adjacency matrix multiplications denotes the
+number of length- \(l\) paths between nodes \(i\) and \(j\) . Hence, by
+employing distinct orders of adjacency matrix multiplications, we can
+extract varying insights from neighbors or paths. Following this
+intuition, we can express diverse heuristics in matrix form. We provide
+a concise summary of heuristics, their mathematical
+
+Table 1: Notations and expressions of adjacency matrices.
+
+\begin{longtable}[]{@{}|l|l|l|@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\hline
+Adjacency Matrix & Notation & Expression \\
+\hline
+Matrix with Self-Loops & A & A + IN \\
+\hline
+Symmetrical Matrix & Asym & D-1/2 A D-1/2 \\
+\hline
+Row-Stochastic Matrix & Ars & D-1 A \\
+\hline
+Column-Stochastic Matrix & Acs & A D-1 \\
+\hline
+Propagation Operator & A & \{A, Asym, Ars, Acs\} \\
+\hline
+\end{longtable}
+
+expressions, and their corresponding matrix forms in Table 2. Next, we
+introduce the definition of the heuristic formulation:
+
+Definition 3.2. (Heuristic formulation). A heuristic formulation is
+denoted by a matrix \(\mathbf{H} \in \mathbb{R}^{N \times N}\) . Each
+entry \((i,j)\) in this matrix corresponds to the heuristic score for
+the link \((i,j)\) , denoted as \(\mathbf{H}_{i,j} = h(i,j)\) .
+
+We can unify both local and global heuristics in a formulation based on
+matrix forms of heuristics. Our proposed heuristic formulation
+parameterizes a combination of matrix multiplications:
+
+\[
+\boldsymbol {H} = \sum_ {l = 0} ^ {L} \left(\beta^ {(l)} \prod_ {m = 0} ^ {l} \mathbb {A} ^ {(m)}\right), \tag {1}
+\]
+
+where
+\(\mathbb{A}^{(m)}\in \{\tilde{A},\tilde{A}_{\mathrm{sym}},\tilde{A}_{\mathrm{rs}},\tilde{A}_{\mathrm{cs}}\}\)
+for \(1\leq m\leq L\) represent the propagation operators, and
+\(\mathbb{A}^{(0)} = I_N\) . The coefficients \(\beta^{(l)}\) for
+\(0\leq l\leq L\) modulate the weights of different orders of matrix
+multiplications, and \(L\) is the maximum order. Numerous traditional
+heuristics align with our formulation under specific configurations.
+Table 2 showcases a selection of traditional heuristics and illustrates
+their alignment with our formulation through propagation operators
+\(\mathbb{A}^{(m)}\) and weights \(\beta^{(l)}\) . We assert the
+formulation's ability to accommodate heuristics in Proposition 3.1:
+
+PROPOSITION 3.1. Our formulation can accommodate a broad spectrum of
+local and global heuristics with propagation operators
+\(\mathbb{A}^{(m)}\) for \(1\leq m\leq L\) , weight parameters
+\(\beta^{(l)}\) for \(0\leq l\leq L\) , and maximum order \(L\) .
+
+Unlike previous methods that exclusively cater to either local or global
+heuristics, our formulation seamlessly integrates both aspects,
+presenting a unified solution. In contrast to prior works relying on
+abstract functions for heuristic approximation {[}1, 32, 33, 38{]}, our
+formulation is developed through direct matrix operations. This
+formulation facilitates rigorous equivalence to numerous local and
+global heuristics under specific configurations. It is crucial to note
+that our heuristic formulation does not aim to accommodate all possible
+heuristics. Instead, it aims to distill the critical characteristics of
+heuristics, with a specific focus on extracting common neighbors from
+local heuristics and global paths from global heuristics.
+
+Existing heuristics are primarily handcrafted and may not be optimal for
+real-world graphs. Leveraging the propagation operators, weight
+parameters and maximum order offers the potential to learn generalized,
+possibly more effective heuristics, which we will discuss in Section
+5.5.1.
+
+Table 2: A selection of traditional local and global heuristics, their
+mathematical expressions, their matrix forms, and specific
+configurations within the unified heuristic formulation for alignment.
+
+Type
+
+Method
+
+Expression
+
+Matrix Form
+
+Propagation Operators A(m)
+
+Weight Parameters β(l)
+
+Local
+
+CN
+
+Γi ∩ Γj \textbar{}
+
+\begin{itemize}
+\tightlist
+\item
+  When setting
+  \(\mathbb{A}^{(1)} = \tilde{A}, \mathbb{A}^{(2)} = \tilde{A}_{\mathrm{rs}}\)
+  in the formulation, it also aligns with the RA Index.
+\end{itemize}
+
+\section{4 HEURISTIC LEARNING GRAPH NEURAL NETWORK
+(HL-GNN)}\label{heuristic-learning-graph-neural-network-hl-gnn}
+
+\section{4.1 Heuristic Learning Graph Neural
+Network}\label{heuristic-learning-graph-neural-network}
+
+4.1.1 Motivation. Direct matrix multiplication serves as a
+straightforward method to implement the heuristic formulation in
+Equation (1). However, it comes with high computational and memory
+costs. The time complexity of direct matrix multiplication is
+\(O(L^2 N^3)\) and the space complexity is \(O(LN^2)\) , where \(N\)
+denotes the number of nodes. This is attributed to executing up to \(L\)
+-order matrix multiplications for \(L\) times. The significant time and
+space complexities present two major challenges of ensuring scalability
+and maintaining depth:
+
+\begin{itemize}
+\tightlist
+\item
+  Scalability. To be scalable, the model must effectively handle large
+  graphs. Datasets like OGB are substantially larger than those like
+  Planetoid, making the value of \(N\) a considerable strain on the time
+  and space complexities.\\
+\item
+  Depth. To effectively integrate global heuristics into the heuristic
+  formulation, the value of \(L\) must be sufficiently large to
+  encapsulate messages from distant nodes. However, increasing \(L\)
+  further strains the time and space complexities.
+\end{itemize}
+
+Consequently, there is a pressing need to mitigate the burdens of both
+time and space complexities.
+
+4.1.2 Architecture. The construction and computation of \(N \times N\)
+matrices impose significant computational and memory demands. One
+potential technique is initializing \(\mathbb{A}^{(0)} = X\) instead of
+\(\mathbb{A}^{(0)} = I_N\) . This approach effectively reduces the
+feature dimensionality from \(N\) to \(F\) , resulting in substantial
+time and space savings. Moreover, since heuristics cannot leverage node
+features on attributed graphs, initializing with
+\(\mathbb{A}^{(0)} = X\) allows the heuristic formulation to utilize
+node features. Even if node features are of low quality or completely
+absent, we can still train embeddings for each node. Therefore, \(X\)
+can represent either raw node features or learnable node embeddings.
+
+Further, we exploit the sparsity of the graph and employ a Graph Neural
+Network to compute the heuristic formulation. We propose the efficient
+and scalable Heuristic Learning Graph Neural Network
+
+(HL-GNN), expressed as:
+
+\[
+Z ^ {(0)} = X, \quad Z ^ {(l)} = \mathbb {A} ^ {(l)} Z ^ {(l - 1)}, \quad Z = \sum_ {l = 0} ^ {L} \beta^ {(l)} Z ^ {(l)}, \tag {2}
+\]
+
+with \(\beta^{(l)}\) representing the learnable weight of the \(l\) -th
+layer, and \(L\) representing the model's depth. An illustration of our
+proposed HL-GNN is provided in Figure 1. We do not impose constraints on
+\(\beta^{(l)}\) , allowing them to take positive or negative values.
+Adaptive weights \(\beta^{(l)}\) facilitate the integration of
+multi-range topological information and govern the trade-off between
+node features and topological information. Given the discrete nature of
+the propagation operators
+\(\mathbb{A}^{(l)} \in \{\tilde{A}, \tilde{A}_{\mathrm{sym}}, \tilde{A}_{\mathrm{rs}}, \tilde{A}_{\mathrm{cs}}\}\)
+, they obstruct the back-propagation process, necessitating their
+relaxation to a continuous form:
+
+\[
+\mathbb {A} ^ {(l)} = \alpha_ {1} ^ {(l)} \tilde {\boldsymbol {A}} _ {\mathrm {r s}} + \alpha_ {2} ^ {(l)} \tilde {\boldsymbol {A}} _ {\mathrm {c s}} + \alpha_ {3} ^ {(l)} \tilde {\boldsymbol {A}} _ {\mathrm {s y m}}, \quad \mathrm {f o r} \quad 1 \leq l \leq L, \quad (3)
+\]
+
+where \(\alpha_{1}^{(l)},\alpha_{2}^{(l)},\alpha_{3}^{(l)}\) are
+layer-specific learnable weights harmonizing three propagation
+mechanisms. The continuous relaxation of the propagation operators
+enables gradient back-propagation, thereby allowing the model to be
+trained end-to-end. We exclude the adjacency matrix
+\(\tilde{\mathbf{A}}\) in Equation (3) to ensure that the eigenvalues of
+\(\mathbb{A}^{(l)}\) fall within the range {[}0, 1{]}. Moreover, we
+apply a softmax function to \(\pmb{\alpha}^{(l)}\) , where
+\(\mathrm{softmax}(\alpha_i^{(l)}) = \exp (\alpha_i^{(l)}) / \sum_{j = 1}^3\exp (\alpha_j^{(l)})\)
+for \(i = 1,2,3\) . Controlling the eigenvalues of \(\mathbb{A}^{(l)}\)
+helps prevent numerical instabilities as well as issues related to
+exploding gradients or vanishing gradients.
+
+HL-GNN employs intra-layer propagation and inter-layer connections as
+described in Equation (2). The salient trait is its elimination of
+representation transformation and non-linear activation at each layer,
+requiring only a few trainable parameters. We assert the relationship
+between the learned representations \(Z\) and the heuristic formulation
+\(H\) in Proposition 4.1:
+
+PROPOSITION 4.1. The relationship between the learned representations
+\(Z\) in Equation (2) and the heuristic formulation \(H\) in Equation
+(1) is given by \(Z = HX\) , where \(X\) is the node feature matrix.
+
+According to Proposition 4.1, the learned representations \(Z\) utilize
+heuristics as weights to combine features from all nodes. The
+
+\pandocbounded{\includegraphics[keepaspectratio]{images/7ec2737a78f2510801ada6d08549b41c50976142c690eaae01ffd5b5655bd677.jpg}}\\
+Figure 1: Illustration of the proposed Heuristic Learning Graph Neural
+Network (HL-GNN). Every rounded rectangle symbolizes a left
+multiplication operation.
+
+heuristic formulation \(H\) can be effectively distilled through the
+message-passing process in HL-GNN. Consequently, HL-GNN has the ability
+to accommodate and generalize both local and global heuristics. Our
+method can be viewed as topological augmentation, employing the
+topological information embedded in \(H\) to enhance raw node features
+\(X\) .
+
+For sparse graphs, the time complexity of HL-GNN is \(O(LMF)\) , where
+\(M\) is the number of edges. The space complexity of HL-GNN is
+\(O(NF)\) . On a large graph, typically containing millions of nodes,
+HL-GNN leads to remarkable time and space savings - ten and five orders
+of magnitude, respectively - compared to direct matrix multiplication.
+
+4.1.3 Training. After acquiring the node representations, we employ a
+predictor to compute the likelihood for each link by
+\(s_{ij} = f_{\theta}(z_i \odot z_j)\) , where \(f_{\theta}\) is a
+feed-forward neural network, \(z_i\) and \(z_j\) represent the
+representations of node \(i\) and \(j\) respectively, and the symbol
+\(\odot\) denotes the element-wise product.
+
+Many methods categorize link prediction as a binary classification
+problem and conventionally employ the cross-entropy loss function.
+However, this might not always be the suitable strategy. Standard
+evaluation procedures in link prediction do not label positive pairs as
+1 and negative pairs as 0. The primary objective is to rank positive
+pairs higher than negative pairs, aligning with the maximization of the
+Area Under the Curve (AUC). In light of this, we adopt the AUC loss as
+described in {[}21{]}, ensuring it aligns conceptually with the
+evaluation procedure:
+
+\[
+\mathcal {L} = \min  _ {\alpha , \beta , \theta} \sum_ {(i, j) \in \mathcal {E}} \sum_ {(i, k) \in \mathcal {E} ^ {-}} \gamma_ {i j} \left(\max  \left(0, \gamma_ {i j} - s _ {i j} + s _ {i k}\right)\right) ^ {2}. \tag {4}
+\]
+
+Here, \(\mathcal{E}^{-}\) signifies the negative links uniformly
+sampling from the set \(\mathcal{V} \times \mathcal{V} - \mathcal{E}\) ,
+and \(\gamma_{ij}\) is an adaptive margin between positive link
+\((i,j)\) and negative link \((i,k)\) . The model is trained end-to-end,
+jointly optimizing the GNN parameters \(\alpha\) and \(\beta\) , along
+with the predictor parameters \(\theta\) .
+
+\section{4.2 Comparison with Existing
+Methods}\label{comparison-with-existing-methods}
+
+We evaluate the heuristic-learning ability, information range, and time
+complexity of HL-GNN by comparing it with conventional GNNs and
+heuristic-inspired GNN methods. A summary of these comparisons is
+provided in Table 3. HL-GNN excels at accommodating and generalizing a
+wide range of both local and global heuristics. In contrast, SEAL
+{[}33{]} focuses on subgraphs to learn local heuristics,
+
+Table 3: Comparison of heuristic-learning ability, information range,
+and time complexity of HL-GNN with conventional GNNs and
+heuristic-inspired GNN methods.
+
+\begin{longtable}[]{@{}|l|l|l|l|@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\hline
+& Learned Heuristics & Range & Time Complexity \\
+\hline
+GCN & N.A. & 3 hops & O(LF(M + NF)) \\
+\hline
+GAT & N.A. & 3 hops & O(LKND2F2) \\
+\hline
+SEAL & Local & 3 hops & O(M(V2 + LEF)) \\
+\hline
+NBFNet & Global & 6 hops & O(LNF(M + NF)) \\
+\hline
+Neo-GNN & Local & 2 hops & O(LMF + NDF2) \\
+\hline
+BUDDY & Local & 3 hops & O(LM(LH + F2)) \\
+\hline
+HL-GNN & Local / Global & 20 hops & O(LMF) \\
+\hline
+\end{longtable}
+
+while NBFNet {[}38{]} concentrates on paths to learn global heuristics.
+Neo-GNN {[}32{]} leverages two MLPs for local heuristic learning, and
+BUDDY {[}4{]} uses subgraph sketches to represent local heuristics.
+Notably, most of these methods are limited to topological information
+within a 3-hop range. In contrast, HL-GNN can reach a depth of
+approximately 20 layers, providing a broader information range. Adaptive
+weights in HL-GNN enable the integration of both local and global
+topological information.
+
+HL-GNN has a time complexity of \(O(LMF)\) , which is the lowest among
+the compared methods. Unlike conventional GNNs, HL-GNN solely utilizes
+propagation mechanisms and omits transformation and activation
+functions. SEAL requires running a subgraph GNN with the labeling trick
+for each link, and NBFNet requires running a global GNN for each source
+node during training and inference. In contrast, HL-GNN only requires
+running a single global GNN during training and inference. Furthermore,
+HL-GNN avoids the need to extract topological information from common
+neighbors and subgraph sketches, as required by Neo-GNN and BUDDY,
+respectively.
+
+\section{5 EXPERIMENTS}\label{experiments}
+
+\section{5.1 Experiment Setup}\label{experiment-setup}
+
+5.1.1 Datasets. We utilize nine datasets from three sources: Planetoid
+{[}22{]}, Amazon {[}23{]}, and OGB {[}8{]}. The Planetoid datasets
+include Cora, Citeseer, and PubMed. The Amazon datasets include Photo
+and Computers. The OGB datasets include ogbl-collab, ogbl-ddi, ogbl-ppa,
+and ogbl-citation2.
+
+5.1.2 Baselines. We compare our model against a diverse set of baseline
+methods, including heuristics like CN {[}2{]}, RA {[}36{]}, KI {[}9{]},
+and RWR {[}3{]}, traditional embedding-based methods such as MF
+{[}11{]}, Node2vec {[}6{]}, and DeepWalk {[}19{]}, as well as
+conventional GNNs like GCN {[}10{]} and GAT {[}26{]}. Additionally, we
+benchmark HL-GNN against heuristic-inspired GNN methods like SEAL
+{[}33{]}, NBFNet {[}38{]}, Neo-GNN {[}32{]}, and BUDDY {[}4{]}. This
+comprehensive comparison enable us to assess the performance and
+effectiveness of the proposed HL-GNN.
+
+5.1.3 Experimental settings. In accordance with previous works {[}4,
+38{]}, we randomly sample \(5\%\) and \(10\%\) of the links for
+validation and test sets on non-OGB datasets. We sample the same number
+of non-edge node pairs as negative links. For the OGB datasets, we
+follow their official train/validation/test splits. Following the
+
+Table 4: Results on link prediction benchmarks including the Planetoid,
+Amazon, and OGB datasets. Results are presented as average ± standard
+deviation. The best and second-best performances are marked with bold
+and underline, respectively. OOM denotes out of GPU memory.
+
+\begin{longtable}[]{@{}|l|l|l|l|l|l|l|l|l|l|@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\hline
+& CoraHits@100 & CiteseerHits@100 & PubmedHits@100 & PhotoAUC &
+ComputersAUC & collabHits@50 & ddiHits@20 & ppaHits@100 & citation2
+MRR \\
+\hline
+CN & 33.92±0.46 & 29.79±0.90 & 23.13±0.15 & 96.73±0.00 & 96.15±0.00 &
+56.44±0.00 & 17.73±0.00 & 27.65±0.00 & 51.47±0.00 \\
+\hline
+RA & 41.07±0.48 & 33.56±0.17 & 27.03±0.35 & 97.20±0.00 & 96.82±0.00 &
+64.00±0.00 & 27.60±0.00 & 49.33±0.00 & 51.98±0.00 \\
+\hline
+KI & 42.34±0.39 & 35.62±0.33 & 30.91±0.69 & 97.45±0.00 & 97.05±0.00 &
+59.79±0.00 & 21.23±0.00 & 24.31±0.00 & 47.83±0.00 \\
+\hline
+RWR & 42.57±0.56 & 36.78±0.58 & 29.77±0.45 & 97.51±0.00 & 96.98±0.00 &
+60.06±0.00 & 22.01±0.00 & 22.16±0.00 & 45.76±0.00 \\
+\hline
+MF & 64.67±1.43 & 65.19±1.47 & 46.94±1.27 & 97.92±0.37 & 97.56±0.66 &
+38.86±0.29 & 13.68±4.75 & 32.29±0.94 & 51.86±4.43 \\
+\hline
+Node2vec & 68.43±2.65 & 69.34±3.04 & 51.88±1.55 & 98.37±0.33 &
+98.21±0.39 & 48.88±0.54 & 23.26±2.09 & 22.26±0.88 & 61.41±0.11 \\
+\hline
+DeepWalk & 70.34±2.96 & 72.05±2.56 & 54.91±1.25 & 98.83±0.23 &
+98.45±0.45 & 50.37±0.34 & 26.42±6.10 & 35.12±0.79 & 55.58±1.75 \\
+\hline
+GCN & 66.79±1.65 & 67.08±2.94 & 53.02±1.39 & 98.61±0.15 & 98.55±0.27 &
+47.14±1.45 & 37.07±5.07 & 18.67±1.32 & 84.74±0.21 \\
+\hline
+GAT & 60.78±3.17 & 62.94±2.45 & 46.29±1.73 & 98.42±0.19 & 98.47±0.32 &
+55.78±1.39 & 54.12±5.43 & 19.94±1.69 & 86.33±0.54 \\
+\hline
+SEAL & 81.71±1.30 & 83.89±2.15 & 75.54±1.32 & 98.85±0.04 & 98.70±0.18 &
+64.74±0.43 & 30.56±3.86 & 48.80±3.16 & 87.67±0.32 \\
+\hline
+NBFNet & 71.65±2.27 & 74.07±1.75 & 58.73±1.99 & 98.29±0.35 & 98.03±0.54
+& OOM & 4.00±0.58 & OOM & OOM \\
+\hline
+Neo-GNN & 80.42±1.31 & 84.67±2.16 & 73.93±1.19 & 98.74±0.55 & 98.27±0.79
+& 62.13±0.58 & 63.57±3.52 & 49.13±0.60 & 87.26±0.84 \\
+\hline
+BUDDY & 88.00±0.44 & 92.93±0.27 & 74.10±0.78 & 99.05±0.21 & 98.69±0.34 &
+65.94±0.58 & 78.51±1.36 & 49.85±0.20 & 87.56±0.11 \\
+\hline
+HL-GNN & 94.22±1.64 & 94.31±1.51 & 88.15±0.38 & 99.11±0.07 & 98.82±0.21
+& 68.11±0.54 & 80.27±3.98 & 56.77±0.84 & 89.43±0.83 \\
+\hline
+\end{longtable}
+
+convention in previous works {[}4, 37{]}, we use Hits@100 as the
+evaluation metric for the Planetoid datasets, and we use AUC for the
+Amazon datasets. For the OGB datasets, we use their official evaluation
+metrics, such as Hits@50 for ogbl-collab, Hits@20 for ogbl-ddi, Hits@100
+for ogbl-ppa, and Mean Reciprocal Rank (MRR) for ogbl-citation2 {[}8{]}.
+
+We include a linear layer as preprocessing before HL-GNN to align the
+dimension of node features with the hidden channels of HL-GNN. We also
+leverage node embeddings on the OGB datasets to enhance the node
+representations. For the ogbl-co11ab dataset, we follow OGB's guidelines
+and use the validation set for training. We evaluate HL-GNN over 10 runs
+without fixing the random seed.
+
+\section{5.2 Main Results}\label{main-results}
+
+As shown in Table 4, HL-GNN consistently outperforms all the baselines
+on all of the datasets, highlighting its effectiveness and robustness
+for link prediction tasks. Table 4 reports the averaged results with
+standard deviations. Notably, HL-GNN achieves a remarkable gain of
+\(7.0\%\) and \(16.7\%\) in Hits@100 compared to the second-best method
+on the Planetoid datasets Cora and Pubmed, respectively. Moreover, our
+HL-GNN demonstrates its ability to handle large-scale graphs
+effectively, as evidenced by its superior performance on the OGB
+datasets. Specifically, HL-GNN achieves a gain of \(13.9\%\) in Hits@100
+on ogbl-ppa, and achieves \(68.11\%\) Hits@50 on ogbl-collab and
+\(89.43\%\) MRR on ogbl-citation2. Even when node features are absent or
+of low quality, HL-GNN maintains consistent performance by learning
+embeddings for each node, as demonstrated on datasets like ogbl-ddi,
+which lack node features.
+
+HL-GNN outperforms all listed heuristics, indicating its capacity to
+generalize heuristics and integrate them with node features. According
+to Table 4, local heuristics like CN and RA perform better than global
+heuristics on the OGB datasets, while global heuristics
+
+like KI and RWR perform better on the Planetoid and Amazon datasets.
+This underscores the importance of establishing a unified formulation
+that accommodates both local and global heuristics. Notably, we can use
+the configuration in Table 2 to recover the heuristic RA from HL-GNN
+without training, achieving a performance of \(49.33\%\) Hits@100 on
+ogbl-ppa. This result serves as a compelling lower bound for HL-GNN's
+performance on ogbl-ppa. HL-GNN significantly outperforms conventional
+GNNs like GCN and GAT across all datasets. Additionally, HL-GNN also
+surpasses existing heuristic-inspired GNN methods, including SEAL,
+NBFNet, Neo-GNN, and BUDDY, suggesting that integrating information from
+multiple ranges is beneficial for link prediction tasks.
+
+\section{5.3 Ablation Studies}\label{ablation-studies}
+
+5.3.1 Different information ranges. The adaptive weights \(\beta^{(l)}\)
+in HL-GNN facilitate the integration of multi-range information,
+encompassing both local and global topological information. To
+investigate the impact of information ranges, we conduct experiments
+isolating either local or global information. We train a GNN variant
+using skip-connections of the first 3 layers as the output, exclusively
+considering local topological information. Similarly, we train another
+GNN variant using the final-layer output with GNN depth \(L \geq 5\) to
+exclusively consider global topological information. Figure 2
+demonstrates that HL-GNN consistently outperforms GNN variants focusing
+solely on local or global topological information. This underscores
+HL-GNN's efficacy in adaptively combining both types of information.
+
+5.3.2 Sufficient model depths. In HL-GNN, achieving sufficient model
+depth is crucial for learning global heuristics and capturing long-range
+dependencies. Our model can effectively reach a depth of around 20
+layers without performance deterioration, as shown in Figure 3. In
+contrast, conventional GNNs often experience a sharp performance drop
+after just 2 or 3 layers. For the Planetoid datasets
+
+\pandocbounded{\includegraphics[keepaspectratio]{images/a36ec726638fbc76b6f1935027c4888428cd0d79a4f5a08479b662883994d982.jpg}}\\
+(a) Cora.
+
+\pandocbounded{\includegraphics[keepaspectratio]{images/34e68589d15d22a1abbed7b66cdbb34be8ffac6517efc888ed72668c9aba574d.jpg}}\\
+(b) ogbl-collab.
+
+\pandocbounded{\includegraphics[keepaspectratio]{images/16aad3dcde69010d541fe5f84ddb45fb60f818a26e3602dcc9e767cd6f9eff05.jpg}}\\
+Figure 2: Ablation study on information ranges. We compare HL-GNN with
+two GNN variants, focusing on either local or global topological
+information, with different GNN depths.\\
+(a) Planetoid datasets.\\
+Figure 3: Test performance on the Planetoid and OGB datasets with
+different GNN depths.
+
+\pandocbounded{\includegraphics[keepaspectratio]{images/8d09be93efe8747c12090f3c1f5b9b518bd412e511130d7f4c2f2b164db5bc59.jpg}}\\
+(b) OGB datasets.
+
+Cora and PubMed, shallow models yield poor performance, likely due to
+the absence of global topological information. Conversely, for the OGB
+datasets ogbl-collab and ogbl-ddi, deeper models (exceeding 15 layers)
+result in decreased performance, possibly due to the introduction of
+non-essential global information, which dilutes the crucial local
+information needed for accurate predictions.
+
+\section{5.4 Efficiency Analysis}\label{efficiency-analysis}
+
+5.4.1 Time efficiency. Our HL-GNN demonstrates exceptional time
+efficiency with the lowest time complexity, as indicated in Table 3. The
+wall time for a single training epoch is provided in Table 5. Although
+HL-GNN generally has a larger depth \(L\) compared to conventional GNNs,
+its experimental wall time per training epoch is comparable to models
+like GCN and GAT. In practice, HL-GNN requires slightly more time than
+GCN or GAT due to its increased depth. However, HL-GNN is several orders
+of magnitude faster than heuristic-inspired GNN methods such as SEAL,
+NBFNet, and Neo-GNN, thanks to its avoidance of running multiple GNNs
+and time-consuming manipulations like applying the labeling trick.\\
+5.4.2 Parameter efficiency. HL-GNN only demands a few parameters per
+layer, with the primary parameter cost incurred by the preprocessing
+step and the MLP predictor. Table 6 compares the number of parameters in
+HL-GNN with other GNN methods, clearly highlighting HL-GNN's superior
+parameter efficiency. Our model stands out as the most
+parameter-efficient among the listed conventional GNNs and
+heuristic-inspired GNN methods.
+
+Table 5: Wall time per epoch (in seconds) for training HL-GNN compared
+to other GNN methods. The shortest and second shortest times are marked
+with bold and underline, respectively.
+
+\begin{longtable}[]{@{}|l|l|l|l|l|l|@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\hline
+& Cora & Citeseer & Pubmed & collab & ddi \\
+\hline
+GCN & 0.02 & 0.03 & 0.4 & 5.3 & 9.2 \\
+\hline
+GAT & 0.05 & 0.06 & 0.5 & 5.8 & 10.4 \\
+\hline
+SEAL & 28.7 & 27.3 & 310 & 5,130 & 15,000 \\
+\hline
+NBFNet & 129 & 115 & 1,050 & / & 52,000 \\
+\hline
+Neo-GNN & 2.6 & 1.4 & 19.5 & 101 & 172 \\
+\hline
+BUDDY & 0.1 & 0.1 & 0.8 & 10.5 & 17.6 \\
+\hline
+HL-GNN & 0.06 & 0.05 & 0.5 & 6.7 & 16.2 \\
+\hline
+\end{longtable}
+
+Table 6: Number of parameters for HL-GNN compared to other GNN methods.
+The least and second least number of parameters are marked with bold and
+underline, respectively.
+
+\begin{longtable}[]{@{}|l|l|l|l|l|l|@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\hline
+& Cora & Citeseer & Pubmed & collab & ddi \\
+\hline
+GCN & 565k & 1.15M & 326k & 231k & 1.36M \\
+\hline
+GAT & 566k & 1.15M & 327k & 394k & 1.55M \\
+\hline
+SEAL & 2.30M & 3.46M & 1.82M & 1.63M & 6.19M \\
+\hline
+NBFNet & 3.71M & 5.02M & 3.03M & OOM & 11.04M \\
+\hline
+Neo-GNN & 631k & 1.21M & 392k & 297k & 1.36M \\
+\hline
+BUDDY & 2.52M & 4.85M & 1.57M & 1.19M & 2.71M \\
+\hline
+HL-GNN & 433k & 1.01M & 194k & 99k & 1.22M \\
+\hline
+\end{longtable}
+
+While conventional GNNs excel in efficiency but may lack in performance,
+and heuristic-inspired GNN methods are effective but time and
+parameter-intensive, HL-GNN strikes a balance. It consistently achieves
+top-tier prediction performance on numerous link prediction benchmarks,
+maintains excellent scalability and time efficiency, and stands out as
+the most parameter-efficient method.
+
+\section{5.5 Interpretability Analysis}\label{interpretability-analysis}
+
+5.5.1 Generalized heuristics and learned weights. Leveraging the
+capabilities of the unified formulation, we can derive generalized
+heuristics by analyzing the learned parameters of HL-GNN. The
+generalized heuristics and learned weights \(\beta^{(l)}\) provide
+insights into the graph-structured data. The learned weights
+\(\beta^{(l)}\) are visually depicted in Figure 4.
+
+For the Cora and Citeseer datasets, the learned weights monotonically
+decrease, indicating that the graph filter serves as a low-pass filter.
+The weight \(\beta^{(0)}\) has the largest magnitude, suggesting that
+crucial information is primarily contained in node features. Local
+topological information from nearby neighbors plays a major role, while
+global topological information from distant nodes serves as a
+complementary factor. Conversely, for the ogbl-collab and ogbl-ddi
+datasets, the weights do not monotonically increase or decrease.
+Instead, they experience a significant change, especially in the first 5
+layers, indicating that the graph filter serves as a high-pass filter.
+The weight \(\beta^{(2)}\) has the largest magnitude, suggesting that
+crucial information lies in local topology rather than node features.
+Moreover, for large values of \(l\) on the ogbl-collab and ogbl-ddi
+
+\pandocbounded{\includegraphics[keepaspectratio]{images/fd08c0428f15a0c85621498961d821677b588860c8e64b2f97047c24c24bd315.jpg}}
+
+\pandocbounded{\includegraphics[keepaspectratio]{images/c956b2907f723715c3b042264683910d2245ec7cf768906ae81c5ede52d750a9.jpg}}
+
+\pandocbounded{\includegraphics[keepaspectratio]{images/8aae8cea685249aa2e810798e168e53fdfd60c1cf828802ccd953d681715e435.jpg}}\\
+(a) Cora.\\
+(c) ogbl-collab.\\
+Figure 4: Learned weights \(\beta^{(l)}\) with \(L = 20\) for the Cora
+and Citeseer datasets, and \(L = 15\) for the ogbl-collab and ogbl-ddi
+datasets.
+
+\pandocbounded{\includegraphics[keepaspectratio]{images/870efe1b01b78b36be85f4f8db4daaefd67edd11e21e8e0b70d7476c83c56686.jpg}}\\
+(b)Citeseer.\\
+(d) ogbl-ssi.\\
+Figure 5: Learned weights \(\beta^{(l)}\) with \(L = 20\) for the
+synthetic triangular and hexagonal networks.
+
+Table 7: Total training time (in seconds) for training from scratch
+compared to training only the MLP predictor using the generalized
+heuristics.
+
+\begin{longtable}[]{@{}|l|l|l|l|l|l|@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\hline
+& Cora & Citeseer & Pubmed & collab & ddi \\
+\hline
+From Scratch & 6.3 & 5.6 & 150 & 5,360 & 8,100 \\
+\hline
+Predictor Only & 2.8 & 2.1 & 0.8 & 823 & 572 \\
+\hline
+\end{longtable}
+
+datasets, the weights \(\beta^{(l)}\) become negative, suggesting that
+global topological information from distant nodes compensates for
+excessive information from nearby neighbors. The learnable weights
+\(\beta^{(l)}\) govern the trade-off between node features and
+topological information, enabling the adaptive integration of
+multi-range topological information.
+
+5.5.2 Leveraging generalized heuristics. With the generalized heuristic
+for each dataset, there is no need to train a GNN and an MLP predictor
+from scratch. Instead, we can simply follow the generalized heuristic
+and train an MLP predictor only, which is significantly more efficient
+than training from scratch. The performance of training the MLP alone is
+comparable to training from scratch, but it converges more quickly. The
+training time for training from scratch versus training only the MLP is
+shown in Table 7. The slight decrease in performance can likely be
+attributed to the fact that, when training the GNN and MLP together, the
+gradients flow through both blocks, allowing them to adapt to each
+other. In contrast, training the MLP alone limits its ability to capture
+complex interactions between the two blocks.
+
+\pandocbounded{\includegraphics[keepaspectratio]{images/f824a5b41349088405d96d5848868914b02dad4ca0fb537cd2e2019ca9194b29.jpg}}\\
+(a) Triangular network.
+
+\pandocbounded{\includegraphics[keepaspectratio]{images/ae2a5ff892bd2964d2fc3dfe161178a8c5b7baff5c020b0e5d2e98c4dcfbb11b.jpg}}\\
+(b) Hexagonal network.
+
+\section{5.6 Case Study}\label{case-study}
+
+We construct two synthetic datasets, a triangular network, and a
+hexagonal network, to assess HL-GNN's ability to learn the most
+effective heuristic and obtain the desired range of information. The
+triangular network consists of 1000 nodes, with every three nodes
+forming a triangle. As each pair of nodes shares two common neighbors,
+we anticipate that the learned heuristic would resemble a local
+heuristic focusing on 2-hop information. The learned weights are
+presented in Figure 5, with \(\beta^{(2)}\) having the largest
+magnitude, corresponding to a local heuristic.
+
+The hexagonal network also comprises 1000 nodes, with every six nodes
+forming a hexagon. Here, we expect the learned heuristic to resemble a
+global heuristic focusing on 5-hop information. As shown in Figure 5,
+the weight \(\beta^{(5)}\) has the largest magnitude, corresponding to a
+global heuristic. In both cases, HL-GNN demonstrates its ability to
+adaptively learn the most effective heuristic based on the specific
+topology. This also emphasizes the importance of developing a
+formulation that can effectively accommodate both local and global
+heuristics.
+
+\section{6 CONCLUSION}\label{conclusion}
+
+We introduce a unified formulation that accommodates and generalizes
+both local and global heuristics using propagation operators and weight
+parameters. Additionally, we propose HL-GNN, which efficiently
+implements this formulation. HL-GNN combines intra-layer propagation and
+inter-layer connections, allowing the integration of multi-range
+topological information. Experiments demonstrate that HL-GNN achieves
+state-of-the-art performance and efficiency. This study is confined to
+undirected graphs; for directed graphs, we preprocess them by converting
+them into undirected graphs. Extensions to multi-relational graphs, such
+as knowledge graphs, are left for future work.
+
+\end{document}
