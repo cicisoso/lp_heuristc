@@ -13,9 +13,6 @@ set -euo pipefail
 # Log file setup
 LOG_FILE="${LOG_FILE:-test_$(date +%Y%m%d_%H%M%S).log}"
 
-# Proxy command (can be overridden via environment variable)
-PROXY_CMD="${PROXY_CMD:-proxychains}"
-
 # Base directories
 PLANETOID_DIR="scripts/Planetoid"
 OGB_DIR="scripts/OGB"
@@ -55,7 +52,6 @@ exec > >(tee -a "$LOG_FILE") 2>&1
 log_status "=========================================="
 log_status "HL-GNN Experiments Started"
 log_status "Log file: $LOG_FILE"
-log_status "Proxy command: $PROXY_CMD"
 log_status "=========================================="
 echo ""
 
@@ -76,8 +72,13 @@ CORA_K=20
 CORA_ALPHA=0.2
 CORA_INIT=RWR
 
+log_status ">>> Dataset: Cora"
+log_status "    Description: Citation network (node classification)"
+log_status "    Configuration: MLP层数=$CORA_MLP_LAYERS, 隐藏层=$CORA_HIDDEN, Dropout=$CORA_DROPOUT"
+log_status "    Training: Epochs=$CORA_EPOCHS, K=$CORA_K, Alpha=$CORA_ALPHA, Init=$CORA_INIT"
+
 run_experiment "Cora" \
-    $PROXY_CMD python $PLANETOID_DIR/planetoid.py \
+    python $PLANETOID_DIR/planetoid.py \
     --dataset cora \
     --mlp_num_layers $CORA_MLP_LAYERS \
     --hidden_channels $CORA_HIDDEN \
@@ -96,8 +97,13 @@ CITESEER_K=20
 CITESEER_ALPHA=0.2
 CITESEER_INIT=RWR
 
+log_status ">>> Dataset: Citeseer"
+log_status "    Description: Citation network (node classification)"
+log_status "    Configuration: MLP层数=$CITESEER_MLP_LAYERS, 隐藏层=$CITESEER_HIDDEN, Dropout=$CITESEER_DROPOUT"
+log_status "    Training: Epochs=$CITESEER_EPOCHS, K=$CITESEER_K, Alpha=$CITESEER_ALPHA, Init=$CITESEER_INIT"
+
 run_experiment "Citeseer" \
-    $PROXY_CMD python $PLANETOID_DIR/planetoid.py \
+    python $PLANETOID_DIR/planetoid.py \
     --dataset citeseer \
     --mlp_num_layers $CITESEER_MLP_LAYERS \
     --hidden_channels $CITESEER_HIDDEN \
@@ -116,8 +122,13 @@ PUBMED_K=20
 PUBMED_ALPHA=0.2
 PUBMED_INIT=KI
 
+log_status ">>> Dataset: Pubmed"
+log_status "    Description: Citation network (node classification)"
+log_status "    Configuration: MLP层数=$PUBMED_MLP_LAYERS, 隐藏层=$PUBMED_HIDDEN, Dropout=$PUBMED_DROPOUT"
+log_status "    Training: Epochs=$PUBMED_EPOCHS, K=$PUBMED_K, Alpha=$PUBMED_ALPHA, Init=$PUBMED_INIT"
+
 run_experiment "Pubmed" \
-    $PROXY_CMD python $PLANETOID_DIR/planetoid.py \
+    python $PLANETOID_DIR/planetoid.py \
     --dataset pubmed \
     --mlp_num_layers $PUBMED_MLP_LAYERS \
     --hidden_channels $PUBMED_HIDDEN \
@@ -144,8 +155,13 @@ PHOTO_K=20
 PHOTO_ALPHA=0.2
 PHOTO_INIT=RWR
 
+log_status ">>> Dataset: Amazon Photo"
+log_status "    Description: Amazon co-purchase network (node classification)"
+log_status "    Configuration: MLP层数=$PHOTO_MLP_LAYERS, 隐藏层=$PHOTO_HIDDEN, Dropout=$PHOTO_DROPOUT"
+log_status "    Training: Epochs=$PHOTO_EPOCHS, K=$PHOTO_K, Alpha=$PHOTO_ALPHA, Init=$PHOTO_INIT"
+
 run_experiment "Amazon Photo" \
-    $PROXY_CMD python $PLANETOID_DIR/amazon.py \
+    python $PLANETOID_DIR/amazon.py \
     --dataset photo \
     --mlp_num_layers $PHOTO_MLP_LAYERS \
     --hidden_channels $PHOTO_HIDDEN \
@@ -164,8 +180,13 @@ COMPUTERS_K=20
 COMPUTERS_ALPHA=0.2
 COMPUTERS_INIT=RWR
 
+log_status ">>> Dataset: Amazon Computers"
+log_status "    Description: Amazon co-purchase network (node classification)"
+log_status "    Configuration: MLP层数=$COMPUTERS_MLP_LAYERS, 隐藏层=$COMPUTERS_HIDDEN, Dropout=$COMPUTERS_DROPOUT"
+log_status "    Training: Epochs=$COMPUTERS_EPOCHS, K=$COMPUTERS_K, Alpha=$COMPUTERS_ALPHA, Init=$COMPUTERS_INIT"
+
 run_experiment "Amazon Computers" \
-    $PROXY_CMD python $PLANETOID_DIR/amazon.py \
+    python $PLANETOID_DIR/amazon.py \
     --dataset computers \
     --mlp_num_layers $COMPUTERS_MLP_LAYERS \
     --hidden_channels $COMPUTERS_HIDDEN \
@@ -192,8 +213,13 @@ COLLAB_EVAL_LAST_BEST=True
 COLLAB_DROPOUT=0.3
 COLLAB_USE_NODE_FEAT=True
 
+log_status ">>> Dataset: ogbl-collab"
+log_status "    Description: Collaboration network (link prediction)"
+log_status "    Configuration: Predictor=$COLLAB_PREDICTOR, Year=$COLLAB_YEAR, Dropout=$COLLAB_DROPOUT"
+log_status "    Training: Epochs=$COLLAB_EPOCHS, UseNodeFeat=$COLLAB_USE_NODE_FEAT, EvalLastBest=$COLLAB_EVAL_LAST_BEST"
+
 run_experiment "ogbl-collab" \
-    $PROXY_CMD python $OGB_DIR/main.py \
+    python $OGB_DIR/main.py \
     --data_name ogbl-collab \
     --predictor $COLLAB_PREDICTOR \
     --use_valedges_as_input $COLLAB_USE_VALEDGES \
@@ -211,8 +237,13 @@ DDI_NUM_NEG=3
 DDI_DROPOUT=0.3
 DDI_LOSS_FUNC=WeightedHingeAUC
 
+log_status ">>> Dataset: ogbl-ddi"
+log_status "    Description: Drug-drug interaction network (link prediction)"
+log_status "    Configuration: Emb=$DDI_EMB_HIDDEN, GNN=$DDI_GNN_HIDDEN, MLP=$DDI_MLP_HIDDEN, Dropout=$DDI_DROPOUT"
+log_status "    Training: NumNeg=$DDI_NUM_NEG, LossFunc=$DDI_LOSS_FUNC"
+
 run_experiment "ogbl-ddi" \
-    $PROXY_CMD python $OGB_DIR/main.py \
+    python $OGB_DIR/main.py \
     --data_name ogbl-ddi \
     --emb_hidden_channels $DDI_EMB_HIDDEN \
     --gnn_hidden_channels $DDI_GNN_HIDDEN \
@@ -234,8 +265,13 @@ PPA_USE_NODE_FEAT=True
 PPA_ALPHA=0.5
 PPA_LOSS_FUNC=WeightedHingeAUC
 
+log_status ">>> Dataset: ogbl-ppa"
+log_status "    Description: Protein-protein association network (link prediction)"
+log_status "    Configuration: Emb=$PPA_EMB_HIDDEN, GNN=$PPA_GNN_HIDDEN, MLP=$PPA_MLP_HIDDEN, Dropout=$PPA_DROPOUT"
+log_status "    Training: Epochs=$PPA_EPOCHS, NumNeg=$PPA_NUM_NEG, Alpha=$PPA_ALPHA, GradClip=$PPA_GRAD_CLIP"
+
 run_experiment "ogbl-ppa" \
-    $PROXY_CMD python $OGB_DIR/main.py \
+    python $OGB_DIR/main.py \
     --data_name ogbl-ppa \
     --emb_hidden_channels $PPA_EMB_HIDDEN \
     --mlp_hidden_channels $PPA_MLP_HIDDEN \
@@ -263,8 +299,13 @@ CITATION2_NEG_SAMPLER=local
 CITATION2_USE_NODE_FEAT=True
 CITATION2_ALPHA=0.6
 
+log_status ">>> Dataset: ogbl-citation2"
+log_status "    Description: Citation network (link prediction)"
+log_status "    Configuration: Emb=$CITATION2_EMB_HIDDEN, GNN=$CITATION2_GNN_HIDDEN, MLP=$CITATION2_MLP_HIDDEN, Dropout=$CITATION2_DROPOUT"
+log_status "    Training: Epochs=$CITATION2_EPOCHS, NumNeg=$CITATION2_NUM_NEG, Alpha=$CITATION2_ALPHA, Metric=$CITATION2_EVAL_METRIC"
+
 run_experiment "ogbl-citation2" \
-    $PROXY_CMD python $OGB_DIR/main.py \
+    python $OGB_DIR/main.py \
     --data_name ogbl-citation2 \
     --emb_hidden_channels $CITATION2_EMB_HIDDEN \
     --mlp_hidden_channels $CITATION2_MLP_HIDDEN \
