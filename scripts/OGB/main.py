@@ -82,6 +82,8 @@ def main():
     device = f'cuda:{args.device}' if torch.cuda.is_available() else 'cpu'
     device = torch.device(device)
 
+    args.data_path = os.path.expanduser(args.data_path)
+
     dataset = PygLinkPropPredDataset(name=args.data_name, root=args.data_path)
     data = dataset[0]
 
