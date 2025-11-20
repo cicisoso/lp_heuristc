@@ -14,6 +14,14 @@ from logger import Logger
 from model import BaseModel, adjust_lr
 from utils import gcn_normalization, adj_normalization
 
+# Fix for PyTorch 2.6+ compatibility with OGB datasets
+# Monkey patch torch.load to use weights_only=False for OGB compatibility
+_original_torch_load = torch.load
+def _patched_torch_load(*args, **kwargs):
+    if 'weights_only' not in kwargs:
+        kwargs['weights_only'] = False
+    return _original_torch_load(*args, **kwargs)
+torch.load = _patched_torch_load
 
 def argument():
     parser = argparse.ArgumentParser()
