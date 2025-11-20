@@ -107,6 +107,8 @@ def main():
 
     print(args)
 
+    os.makedirs(args.res_dir, exist_ok=True)
+
     # create log file and save args
     log_file_name = 'log_' + args.data_name + '_' + str(int(time.time())) + '.txt'
     log_file = os.path.join(args.res_dir, log_file_name)
